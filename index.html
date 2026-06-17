@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline</title>
+
 <style>
 *{
     margin:0;
@@ -15,13 +22,14 @@ body{
     min-height:100vh;
 }
 
-/* subtle warm glow background */
+/* orange + blue glow background */
 body::before{
     content:"";
     position:fixed;
     inset:0;
-    background: radial-gradient(circle at top left, rgba(255,140,0,0.15), transparent 40%),
-                radial-gradient(circle at bottom right, rgba(0,140,255,0.12), transparent 45%);
+    background:
+        radial-gradient(circle at top left, rgba(255,140,0,0.18), transparent 40%),
+        radial-gradient(circle at bottom right, rgba(77,163,255,0.15), transparent 45%);
     pointer-events:none;
 }
 
@@ -41,8 +49,7 @@ body::before{
 h1{
     text-align:center;
     margin-bottom:10px;
-    color:#ff9a2f; /* orange */
-    letter-spacing:0.5px;
+    color:#ff9a2f;
 }
 
 input, select{
@@ -53,8 +60,8 @@ input, select{
     margin-bottom:10px;
     background:#23232a;
     color:white;
+    border:1px solid rgba(77,163,255,0.2);
     outline:none;
-    border:1px solid rgba(0,140,255,0.2);
 }
 
 input:focus, select:focus{
@@ -67,7 +74,7 @@ button{
     padding:12px;
     border:none;
     border-radius:10px;
-    background:#4da3ff; /* blue accent */
+    background:#4da3ff;
     color:white;
     cursor:pointer;
     font-size:16px;
@@ -86,18 +93,17 @@ button:hover{
     border-radius:15px;
     padding:15px;
     margin-bottom:12px;
-    border-left:3px solid #ff9a2f; /* orange highlight */
+    border-left:3px solid #ff9a2f;
 }
 
 .label{
     font-size:14px;
-    color:#ffb36b; /* soft orange */
+    color:#ffb36b;
 }
 
 .number{
     font-size:28px;
     font-weight:bold;
-    color:#ffffff;
 }
 
 .today{
@@ -110,9 +116,152 @@ button:hover{
     font-size:14px;
 }
 
-/* % card highlight */
 #percent{
-    color:#4da3ff; /* blue emphasis */
+    color:#4da3ff;
     font-size:30px;
 }
 </style>
+</head>
+
+<body>
+
+<div class="phone">
+
+    <div id="login" class="card">
+        <h1>Timeline</h1>
+
+        <input type="password" id="password" placeholder="Enter Password">
+
+        <button onclick="checkPassword()">Unlock</button>
+    </div>
+
+    <div id="app" class="hidden card">
+
+        <div class="today">
+            <h1>Timeline</h1>
+            <div id="todayDate" class="subtitle"></div>
+        </div>
+
+        <!-- MODE SELECTOR -->
+        <select id="unitSelect" onchange="updateUI()">
+            <option value="days">Days</option>
+            <option value="months">Months</option>
+            <option value="years">Years</option>
+            <option value="total">Total</option>
+        </select>
+
+        <!-- REALIZATION -->
+        <div class="date-card">
+            <div class="label">Realization</div>
+            <div class="number" id="realization"></div>
+        </div>
+
+        <!-- FIRST DATING -->
+        <div class="date-card">
+            <div class="label">First Dating</div>
+            <div class="number" id="dating1"></div>
+        </div>
+
+        <!-- DATING AGAIN -->
+        <div class="date-card">
+            <div class="label">Dating Again</div>
+            <div class="number" id="dating2"></div>
+        </div>
+
+        <!-- % CARD -->
+        <div class="date-card">
+            <div class="label">Realization % of Life</div>
+            <div class="number" id="percent"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const PASSWORD = "SFEY5126";
+
+const birthday = new Date("2007-04-05");
+const realization = new Date("2022-10-10");
+const dating1 = new Date("2023-01-24");
+const dating2 = new Date("2026-05-01");
+
+function checkPassword(){
+    const entered = document.getElementById("password").value;
+
+    if(entered === PASSWORD){
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+        startLiveUpdates();
+    } else {
+        alert("Incorrect password");
+    }
+}
+
+function diffDays(start){
+    const now = new Date();
+    return (now - start) / (1000 * 60 * 60 * 24);
+}
+
+// TOTAL MODE BREAKDOWN (separate system)
+function breakdown(days){
+    const years = Math.floor(days / 365.25);
+    const months = Math.floor((days % 365.25) / 30.436875);
+    const remDays = Math.floor(days % 30.436875);
+    return `${years}y ${months}m ${remDays}d`;
+}
+
+function format(value, unit){
+
+    if(unit === "total"){
+        return breakdown(value);
+    }
+
+    if(unit === "days"){
+        return Math.floor(value) + " days";
+    }
+
+    if(unit === "months"){
+        return Math.floor(value / 30.436875) + " months";
+    }
+
+    if(unit === "years"){
+        return Math.floor(value / 365.25) + " years";
+    }
+}
+
+function updateUI(){
+
+    const mode = document.getElementById("unitSelect").value;
+
+    document.getElementById("todayDate")
+        .textContent = new Date().toLocaleDateString();
+
+    const r = diffDays(realization);
+    const d1 = diffDays(dating1);
+    const d2 = diffDays(dating2);
+
+    document.getElementById("realization").textContent = format(r, mode);
+    document.getElementById("dating1").textContent = format(d1, mode);
+    document.getElementById("dating2").textContent = format(d2, mode);
+
+    // % of life (floor only, no rounding up)
+    const life = diffDays(birthday);
+    const real = diffDays(realization);
+
+    const percent = Math.floor((real / life) * 10000) / 100;
+
+    document.getElementById("percent")
+        .textContent = percent + "%";
+}
+
+function startLiveUpdates(){
+    updateUI();
+    setInterval(updateUI, 1000);
+}
+
+</script>
+
+</body>
+</html>
