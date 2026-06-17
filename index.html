@@ -1,214 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Timeline</title>
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
-}
-
-body{
-    background:#121212;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-}
-
-.phone{
-    width:360px;
-    max-width:95vw;
-}
-
-.card{
-    background:#1f1f1f;
-    border-radius:20px;
-    padding:20px;
-    box-shadow:0 0 15px rgba(0,0,0,.4);
-}
-
-h1{
-    text-align:center;
-    margin-bottom:20px;
-}
-
-input{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    margin-bottom:15px;
-    background:#2c2c2c;
-    color:white;
-}
-
-button{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    background:#4f8cff;
-    color:white;
-    cursor:pointer;
-    font-size:16px;
-}
-
-button:hover{
-    opacity:.9;
-}
-
-.hidden{
-    display:none;
-}
-
-.date-card{
-    background:#2c2c2c;
-    border-radius:15px;
-    padding:15px;
-    margin-bottom:12px;
-}
-
-.label{
-    font-size:14px;
-    color:#aaa;
-}
-
-.number{
-    font-size:28px;
-    font-weight:bold;
-}
-
-.today{
-    text-align:center;
-    margin-bottom:20px;
-}
-
-.subtitle{
-    color:#999;
-    font-size:14px;
-}
-</style>
-</head>
-<body>
-
-<div class="phone">
-
-    <div id="login" class="card">
-        <h1>Timeline</h1>
-
-        <input
-            type="password"
-            id="password"
-            placeholder="Enter Password">
-
-        <button onclick="checkPassword()">
-            Unlock
-        </button>
-    </div>
-
-    <div id="app" class="hidden card">
-
-        <div class="today">
-            <h1>Timeline</h1>
-            <div id="todayDate" class="subtitle"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">Birthday</div>
-            <div class="number" id="birthday"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">Realization</div>
-            <div class="number" id="realization"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">First Dating</div>
-            <div class="number" id="dating1"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">Dating Again</div>
-            <div class="number" id="dating2"></div>
-        </div>
-
-    </div>
-
-</div>
-
 <script>
 
 const PASSWORD = "SFEY5126";
 
+// store last displayed values so animation can start from current state
+let currentValues = {
+    birthday: 0,
+    realization: 0,
+    dating1: 0,
+    dating2: 0
+};
+
 function checkPassword() {
 
-    const entered =
-        document.getElementById("password").value;
+    const entered = document.getElementById("password").value;
 
     if (entered === PASSWORD) {
-
-        document.getElementById("login")
-            .classList.add("hidden");
-
-        document.getElementById("app")
-            .classList.remove("hidden");
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
 
         updateDates();
 
+        // live refresh every second
+        setInterval(updateDates, 1000);
+
     } else {
-
         alert("Incorrect password");
-
     }
 }
 
-function daysSince(dateString){
-
+// raw difference in days
+function diffInDays(dateString){
     const start = new Date(dateString);
-    const today = new Date();
+    const now = new Date();
+    return (now - start) / (1000 * 60 * 60 * 24);
+}
 
-    const diff =
-        today - start;
+function convert(days){
+    const mode = document.getElementById("viewMode").value;
 
-    return Math.floor(
-        diff / (1000 * 60 * 60 * 24)
-    );
+    if (mode === "days") return days;
+    if (mode === "months") return days / 30.436875;
+    if (mode === "years") return days / 365.2425;
+}
+
+function animateValue(key, newValue){
+
+    const el = document.getElementById(key);
+
+    const startValue = currentValues[key] || 0;
+    const change = newValue - startValue;
+
+    const duration = 500; // ms
+    const startTime = performance.now();
+
+    function animate(time){
+
+        const progress = Math.min((time - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // smooth ease-out
+
+        const value = startValue + change * eased;
+
+        el.textContent =
+            (Math.round(value * 100) / 100).toFixed(2) +
+            " " +
+            document.getElementById("viewMode").value;
+
+        if (progress < 1){
+            requestAnimationFrame(animate);
+        } else {
+            currentValues[key] = newValue;
+        }
+    }
+
+    requestAnimationFrame(animate);
 }
 
 function updateDates(){
 
     const today = new Date();
-
-    document.getElementById("todayDate")
-        .textContent =
+    document.getElementById("todayDate").textContent =
         today.toLocaleDateString();
 
-    document.getElementById("birthday")
-        .textContent =
-        daysSince("2007-04-05") + " days";
-
-    document.getElementById("realization")
-        .textContent =
-        daysSince("2022-10-10") + " days";
-
-    document.getElementById("dating1")
-        .textContent =
-        daysSince("2023-01-24") + " days";
-
-    document.getElementById("dating2")
-        .textContent =
-        daysSince("2026-05-01") + " days";
+    animateValue("birthday", convert(diffInDays("2007-04-05")));
+    animateValue("realization", convert(diffInDays("2022-10-10")));
+    animateValue("dating1", convert(diffInDays("2023-01-24")));
+    animateValue("dating2", convert(diffInDays("2026-05-01")));
 }
 
-</script>
+// re-animate when switching modes
+document.addEventListener("DOMContentLoaded", () => {
+    const mode = document.getElementById("viewMode");
+    if (mode) mode.addEventListener("change", updateDates);
+});
 
-</body>
-</html>
+</script>
