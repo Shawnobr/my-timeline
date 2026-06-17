@@ -1,152 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Timeline</title>
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
-}
-
-body{
-    background:#121212;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-}
-
-.phone{
-    width:360px;
-    max-width:95vw;
-}
-
-.card{
-    background:#1f1f1f;
-    border-radius:20px;
-    padding:20px;
-    box-shadow:0 0 15px rgba(0,0,0,.4);
-}
-
-h1{
-    text-align:center;
-    margin-bottom:10px;
-}
-
-input, select{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    margin-bottom:10px;
-    background:#2c2c2c;
-    color:white;
-}
-
-button{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    background:#4f8cff;
-    color:white;
-    cursor:pointer;
-    font-size:16px;
-}
-
-button:hover{ opacity:.9; }
-
-.hidden{ display:none; }
-
-.date-card{
-    background:#2c2c2c;
-    border-radius:15px;
-    padding:15px;
-    margin-bottom:12px;
-}
-
-.label{
-    font-size:14px;
-    color:#aaa;
-}
-
-.number{
-    font-size:28px;
-    font-weight:bold;
-}
-
-.today{
-    text-align:center;
-    margin-bottom:15px;
-}
-
-.subtitle{
-    color:#999;
-    font-size:14px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="phone">
-
-    <div id="login" class="card">
-        <h1>Timeline</h1>
-
-        <input type="password" id="password" placeholder="Enter Password">
-
-        <button onclick="checkPassword()">Unlock</button>
-    </div>
-
-    <div id="app" class="hidden card">
-
-        <div class="today">
-            <h1>Timeline</h1>
-            <div id="todayDate" class="subtitle"></div>
-        </div>
-
-        <!-- UNIT SELECTOR -->
-        <select id="unitSelect" onchange="updateUI()">
-            <option value="days">Days</option>
-            <option value="months">Months</option>
-            <option value="years">Years</option>
-        </select>
-
-        <!-- REALIZATION -->
-        <div class="date-card">
-            <div class="label">Realization</div>
-            <div class="number" id="realization"></div>
-        </div>
-
-        <!-- FIRST DATING -->
-        <div class="date-card">
-            <div class="label">First Dating</div>
-            <div class="number" id="dating1"></div>
-        </div>
-
-        <!-- DATING AGAIN -->
-        <div class="date-card">
-            <div class="label">Dating Again</div>
-            <div class="number" id="dating2"></div>
-        </div>
-
-        <!-- % CARD -->
-        <div class="date-card">
-            <div class="label">Realization % of Life</div>
-            <div class="number" id="percent"></div>
-        </div>
-
-    </div>
-
-</div>
-
 <script>
 
 const PASSWORD = "SFEY5126";
@@ -168,45 +19,66 @@ function checkPassword(){
     }
 }
 
-function diffTime(start, unit){
+// total days difference (floor only)
+function getDays(start){
     const now = new Date();
-    const diffMs = now - start;
-
-    const days = diffMs / (1000 * 60 * 60 * 24);
-
-    if(unit === "days") return days;
-    if(unit === "months") return days / 30.436875;
-    if(unit === "years") return days / 365.25;
+    return Math.floor((now - start) / (1000 * 60 * 60 * 24));
 }
 
-function format(val, unit){
-    return val.toFixed(2) + " " + unit;
+// breakdown helper
+function breakdown(days){
+    const years = Math.floor(days / 365.25);
+    const months = Math.floor((days % 365.25) / 30.436875);
+    const remDays = Math.floor(days % 30.436875);
+
+    return { years, months, days: remDays };
+}
+
+function formatTotal(days, mode){
+
+    if(mode === "years"){
+        const b = breakdown(days);
+        return `${b.years}y ${b.months}m ${b.days}d`;
+    }
+
+    if(mode === "months"){
+        const totalMonths = Math.floor(days / 30.436875);
+        const remDays = Math.floor(days % 30.436875);
+        return `${totalMonths}m ${remDays}d`;
+    }
+
+    // default: days mode
+    return `${Math.floor(days)} days`;
 }
 
 function updateUI(){
 
-    const unit = document.getElementById("unitSelect").value;
+    const mode = document.getElementById("unitSelect").value;
 
     document.getElementById("todayDate")
         .textContent = new Date().toLocaleDateString();
 
+    const rDays = getDays(realization);
+    const d1Days = getDays(dating1);
+    const d2Days = getDays(dating2);
+
     document.getElementById("realization")
-        .textContent = format(diffTime(realization, unit), unit);
+        .textContent = formatTotal(rDays, mode);
 
     document.getElementById("dating1")
-        .textContent = format(diffTime(dating1, unit), unit);
+        .textContent = formatTotal(d1Days, mode);
 
     document.getElementById("dating2")
-        .textContent = format(diffTime(dating2, unit), unit);
+        .textContent = formatTotal(d2Days, mode);
 
-    // % calculation (always in DAYS for accuracy)
-    const lifeSpan = new Date() - birthday;
-    const realizationSpan = new Date() - realization;
+    // % realization of life (always accurate, no rounding up)
+    const lifeDays = getDays(birthday);
+    const realizationDays = getDays(realization);
 
-    const percent = (realizationSpan / lifeSpan) * 100;
+    const percent = Math.floor((realizationDays / lifeDays) * 10000) / 100;
 
     document.getElementById("percent")
-        .textContent = percent.toFixed(2) + "%";
+        .textContent = percent + "%";
 }
 
 function startLiveUpdates(){
@@ -215,6 +87,3 @@ function startLiveUpdates(){
 }
 
 </script>
-
-</body>
-</html>
