@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Timeline</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#121212;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.phone{
+    width:360px;
+    max-width:95vw;
+}
+
+.card{
+    background:#1f1f1f;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 0 15px rgba(0,0,0,.4);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    margin-bottom:15px;
+    background:#2c2c2c;
+    color:white;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#4f8cff;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.hidden{
+    display:none;
+}
+
+.date-card{
+    background:#2c2c2c;
+    border-radius:15px;
+    padding:15px;
+    margin-bottom:12px;
+}
+
+.label{
+    font-size:14px;
+    color:#aaa;
+}
+
+.number{
+    font-size:28px;
+    font-weight:bold;
+}
+
+.today{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.subtitle{
+    color:#999;
+    font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+    <div id="login" class="card">
+        <h1>My Timeline</h1>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Enter Password">
+
+        <button onclick="checkPassword()">
+            Unlock
+        </button>
+    </div>
+
+    <div id="app" class="hidden card">
+
+        <div class="today">
+            <h1>My Timeline</h1>
+            <div id="todayDate" class="subtitle"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Birthday</div>
+            <div class="number" id="birthday"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Realization</div>
+            <div class="number" id="realization"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">First Dating</div>
+            <div class="number" id="dating1"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Dating Again</div>
+            <div class="number" id="dating2"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const PASSWORD = "yourpassword";
+
+function checkPassword() {
+
+    const entered =
+        document.getElementById("password").value;
+
+    if (entered === PASSWORD) {
+
+        document.getElementById("login")
+            .classList.add("hidden");
+
+        document.getElementById("app")
+            .classList.remove("hidden");
+
+        updateDates();
+
+    } else {
+
+        alert("Incorrect password");
+
+    }
+}
+
+function daysSince(dateString){
+
+    const start = new Date(dateString);
+    const today = new Date();
+
+    const diff =
+        today - start;
+
+    return Math.floor(
+        diff / (1000 * 60 * 60 * 24)
+    );
+}
+
+function updateDates(){
+
+    const today = new Date();
+
+    document.getElementById("todayDate")
+        .textContent =
+        today.toLocaleDateString();
+
+    document.getElementById("birthday")
+        .textContent =
+        daysSince("2007-04-05") + " days";
+
+    document.getElementById("realization")
+        .textContent =
+        daysSince("2022-10-10") + " days";
+
+    document.getElementById("dating1")
+        .textContent =
+        daysSince("2023-01-24") + " days";
+
+    document.getElementById("dating2")
+        .textContent =
+        daysSince("2026-05-01") + " days";
+}
+
+</script>
+
+</body>
+</html>
