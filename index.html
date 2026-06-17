@@ -2,7 +2,6 @@
 
 const PASSWORD = "SFEY5126";
 
-// store last displayed values so animation can start from current state
 let currentValues = {
     birthday: 0,
     realization: 0,
@@ -15,12 +14,11 @@ function checkPassword() {
     const entered = document.getElementById("password").value;
 
     if (entered === PASSWORD) {
+
         document.getElementById("login").classList.add("hidden");
         document.getElementById("app").classList.remove("hidden");
 
         updateDates();
-
-        // live refresh every second
         setInterval(updateDates, 1000);
 
     } else {
@@ -28,42 +26,50 @@ function checkPassword() {
     }
 }
 
-// raw difference in days
 function diffInDays(dateString){
     const start = new Date(dateString);
     const now = new Date();
     return (now - start) / (1000 * 60 * 60 * 24);
 }
 
+function getMode(){
+    const el = document.getElementById("viewMode");
+    return el ? el.value : "days";
+}
+
 function convert(days){
-    const mode = document.getElementById("viewMode").value;
+
+    const mode = getMode();
 
     if (mode === "days") return days;
     if (mode === "months") return days / 30.436875;
     if (mode === "years") return days / 365.2425;
+
+    return days;
 }
 
 function animateValue(key, newValue){
 
     const el = document.getElementById(key);
+    if (!el) return;
 
-    const startValue = currentValues[key] || 0;
+    const startValue = currentValues[key] ?? 0;
     const change = newValue - startValue;
 
-    const duration = 500; // ms
+    const duration = 600;
     const startTime = performance.now();
 
     function animate(time){
 
         const progress = Math.min((time - startTime) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3); // smooth ease-out
+        const eased = 1 - Math.pow(1 - progress, 3);
 
         const value = startValue + change * eased;
 
         el.textContent =
             (Math.round(value * 100) / 100).toFixed(2) +
             " " +
-            document.getElementById("viewMode").value;
+            getMode();
 
         if (progress < 1){
             requestAnimationFrame(animate);
@@ -78,8 +84,11 @@ function animateValue(key, newValue){
 function updateDates(){
 
     const today = new Date();
-    document.getElementById("todayDate").textContent =
-        today.toLocaleDateString();
+    const todayEl = document.getElementById("todayDate");
+
+    if (todayEl){
+        todayEl.textContent = today.toLocaleDateString();
+    }
 
     animateValue("birthday", convert(diffInDays("2007-04-05")));
     animateValue("realization", convert(diffInDays("2022-10-10")));
@@ -87,10 +96,12 @@ function updateDates(){
     animateValue("dating2", convert(diffInDays("2026-05-01")));
 }
 
-// re-animate when switching modes
+// IMPORTANT: ensure DOM is loaded before anything runs
 document.addEventListener("DOMContentLoaded", () => {
+
     const mode = document.getElementById("viewMode");
     if (mode) mode.addEventListener("change", updateDates);
+
 });
 
 </script>
