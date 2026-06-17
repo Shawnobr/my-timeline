@@ -11,14 +11,18 @@ let currentValues = {
 
 function checkPassword() {
 
-    const entered = document.getElementById("password").value;
+    const entered = document.getElementById("password");
 
-    if (entered === PASSWORD) {
+    if (!entered) return;
+
+    if (entered.value === PASSWORD) {
 
         document.getElementById("login").classList.add("hidden");
         document.getElementById("app").classList.remove("hidden");
 
         updateDates();
+
+        // live update every second
         setInterval(updateDates, 1000);
 
     } else {
@@ -41,30 +45,33 @@ function convert(days){
 
     const mode = getMode();
 
-    if (mode === "days") return days;
-    if (mode === "months") return days / 30.436875;
-    if (mode === "years") return days / 365.2425;
-
-    return days;
+    switch(mode){
+        case "months":
+            return days / 30.436875;
+        case "years":
+            return days / 365.2425;
+        default:
+            return days;
+    }
 }
 
-function animateValue(key, newValue){
+function animateValue(key, targetValue){
 
     const el = document.getElementById(key);
     if (!el) return;
 
     const startValue = currentValues[key] ?? 0;
-    const change = newValue - startValue;
+    const diff = targetValue - startValue;
 
-    const duration = 600;
+    const duration = 700;
     const startTime = performance.now();
 
-    function animate(time){
+    function frame(time){
 
         const progress = Math.min((time - startTime) / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
 
-        const value = startValue + change * eased;
+        const value = startValue + diff * eased;
 
         el.textContent =
             (Math.round(value * 100) / 100).toFixed(2) +
@@ -72,22 +79,20 @@ function animateValue(key, newValue){
             getMode();
 
         if (progress < 1){
-            requestAnimationFrame(animate);
+            requestAnimationFrame(frame);
         } else {
-            currentValues[key] = newValue;
+            currentValues[key] = targetValue;
         }
     }
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(frame);
 }
 
 function updateDates(){
 
-    const today = new Date();
     const todayEl = document.getElementById("todayDate");
-
     if (todayEl){
-        todayEl.textContent = today.toLocaleDateString();
+        todayEl.textContent = new Date().toLocaleDateString();
     }
 
     animateValue("birthday", convert(diffInDays("2007-04-05")));
@@ -96,11 +101,13 @@ function updateDates(){
     animateValue("dating2", convert(diffInDays("2026-05-01")));
 }
 
-// IMPORTANT: ensure DOM is loaded before anything runs
+// SAFE INIT (prevents white screen crashes)
 document.addEventListener("DOMContentLoaded", () => {
 
     const mode = document.getElementById("viewMode");
-    if (mode) mode.addEventListener("change", updateDates);
+    if (mode){
+        mode.addEventListener("change", updateDates);
+    }
 
 });
 
