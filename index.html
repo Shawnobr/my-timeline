@@ -1,114 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#121212;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.phone{
+    width:360px;
+    max-width:95vw;
+}
+
+.card{
+    background:#1f1f1f;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 0 15px rgba(0,0,0,.4);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    margin-bottom:15px;
+    background:#2c2c2c;
+    color:white;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#4f8cff;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.hidden{
+    display:none;
+}
+
+.date-card{
+    background:#2c2c2c;
+    border-radius:15px;
+    padding:15px;
+    margin-bottom:12px;
+}
+
+.label{
+    font-size:14px;
+    color:#aaa;
+}
+
+.number{
+    font-size:28px;
+    font-weight:bold;
+}
+
+.today{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.subtitle{
+    color:#999;
+    font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+    <div id="login" class="card">
+        <h1>Timeline</h1>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Enter Password">
+
+        <button onclick="checkPassword()">
+            Unlock
+        </button>
+    </div>
+
+    <div id="app" class="hidden card">
+
+        <div class="today">
+            <h1>Timeline</h1>
+            <div id="todayDate" class="subtitle"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Birthday</div>
+            <div class="number" id="birthday"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Realization</div>
+            <div class="number" id="realization"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">First Dating</div>
+            <div class="number" id="dating1"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Dating Again</div>
+            <div class="number" id="dating2"></div>
+        </div>
+
+    </div>
+
+</div>
+
 <script>
 
 const PASSWORD = "SFEY5126";
 
-let currentValues = {
-    birthday: 0,
-    realization: 0,
-    dating1: 0,
-    dating2: 0
-};
-
 function checkPassword() {
 
-    const entered = document.getElementById("password");
+    const entered =
+        document.getElementById("password").value;
 
-    if (!entered) return;
+    if (entered === PASSWORD) {
 
-    if (entered.value === PASSWORD) {
+        document.getElementById("login")
+            .classList.add("hidden");
 
-        document.getElementById("login").classList.add("hidden");
-        document.getElementById("app").classList.remove("hidden");
+        document.getElementById("app")
+            .classList.remove("hidden");
 
         updateDates();
 
-        // live update every second
-        setInterval(updateDates, 1000);
-
     } else {
+
         alert("Incorrect password");
+
     }
 }
 
-function diffInDays(dateString){
+function daysSince(dateString){
+
     const start = new Date(dateString);
-    const now = new Date();
-    return (now - start) / (1000 * 60 * 60 * 24);
-}
+    const today = new Date();
 
-function getMode(){
-    const el = document.getElementById("viewMode");
-    return el ? el.value : "days";
-}
+    const diff =
+        today - start;
 
-function convert(days){
-
-    const mode = getMode();
-
-    switch(mode){
-        case "months":
-            return days / 30.436875;
-        case "years":
-            return days / 365.2425;
-        default:
-            return days;
-    }
-}
-
-function animateValue(key, targetValue){
-
-    const el = document.getElementById(key);
-    if (!el) return;
-
-    const startValue = currentValues[key] ?? 0;
-    const diff = targetValue - startValue;
-
-    const duration = 700;
-    const startTime = performance.now();
-
-    function frame(time){
-
-        const progress = Math.min((time - startTime) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-
-        const value = startValue + diff * eased;
-
-        el.textContent =
-            (Math.round(value * 100) / 100).toFixed(2) +
-            " " +
-            getMode();
-
-        if (progress < 1){
-            requestAnimationFrame(frame);
-        } else {
-            currentValues[key] = targetValue;
-        }
-    }
-
-    requestAnimationFrame(frame);
+    return Math.floor(
+        diff / (1000 * 60 * 60 * 24)
+    );
 }
 
 function updateDates(){
 
-    const todayEl = document.getElementById("todayDate");
-    if (todayEl){
-        todayEl.textContent = new Date().toLocaleDateString();
-    }
+    const today = new Date();
 
-    animateValue("birthday", convert(diffInDays("2007-04-05")));
-    animateValue("realization", convert(diffInDays("2022-10-10")));
-    animateValue("dating1", convert(diffInDays("2023-01-24")));
-    animateValue("dating2", convert(diffInDays("2026-05-01")));
+    document.getElementById("todayDate")
+        .textContent =
+        today.toLocaleDateString();
+
+    document.getElementById("birthday")
+        .textContent =
+        daysSince("2007-04-05") + " days";
+
+    document.getElementById("realization")
+        .textContent =
+        daysSince("2022-10-10") + " days";
+
+    document.getElementById("dating1")
+        .textContent =
+        daysSince("2023-01-24") + " days";
+
+    document.getElementById("dating2")
+        .textContent =
+        daysSince("2026-05-01") + " days";
 }
 
-// SAFE INIT (prevents white screen crashes)
-document.addEventListener("DOMContentLoaded", () => {
-
-    const mode = document.getElementById("viewMode");
-    if (mode){
-        mode.addEventListener("change", updateDates);
-    }
-
-});
-
 </script>
+
+</body>
+</html>
