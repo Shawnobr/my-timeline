@@ -39,7 +39,6 @@ body::before{
     max-width:95vw;
 }
 
-/* MAIN CARD */
 .card{
     background:linear-gradient(180deg, #1a120d, #120c09);
     border-radius:20px;
@@ -48,7 +47,6 @@ body::before{
     border:1px solid rgba(255,140,0,0.25);
 }
 
-/* TITLE (deep orange) */
 h1{
     text-align:center;
     margin-bottom:10px;
@@ -56,7 +54,6 @@ h1{
     letter-spacing:0.5px;
 }
 
-/* INPUTS + SELECT */
 input, select{
     width:100%;
     padding:12px;
@@ -75,7 +72,6 @@ input:focus, select:focus{
     box-shadow:0 0 10px rgba(77,163,255,0.25);
 }
 
-/* BUTTON (blue accent) */
 button{
     width:100%;
     padding:12px;
@@ -95,9 +91,10 @@ button:hover{
     transform:scale(1.02);
 }
 
-.hidden{ display:none; }
+.hidden{
+    display:none;
+}
 
-/* DATA CARDS */
 .date-card{
     background:linear-gradient(180deg, #20140f, #150e0a);
     border-radius:15px;
@@ -108,20 +105,17 @@ button:hover{
     box-shadow:inset 0 0 10px rgba(255,140,0,0.05);
 }
 
-/* LABELS (softer orange) */
 .label{
     font-size:14px;
     color:#ffb36b;
 }
 
-/* VALUES */
 .number{
     font-size:28px;
     font-weight:bold;
     color:white;
 }
 
-/* TITLE SUBTEXT */
 .today{
     text-align:center;
     margin-bottom:15px;
@@ -132,7 +126,6 @@ button:hover{
     font-size:14px;
 }
 
-/* PERCENT (stays white per request) */
 #percent{
     color:white;
     font-size:30px;
@@ -159,7 +152,6 @@ button:hover{
             <div id="todayDate" class="subtitle"></div>
         </div>
 
-        <!-- MODE SELECTOR -->
         <select id="unitSelect" onchange="updateUI()">
             <option value="days">Days</option>
             <option value="months">Months</option>
@@ -167,18 +159,31 @@ button:hover{
             <option value="total">Total</option>
         </select>
 
-        <!-- REALIZATION -->
         <div class="date-card">
             <div class="label">Time since we met</div>
             <div class="number" id="realization"></div>
         </div>
-        <!-- DATING AGAIN -->
+
         <div class="date-card">
-            <div class="label">Dating Again</div>
+            <div class="label">Time since we first got together</div>
+            <div class="number" id="dating1"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Time since we've been on talking terms</div>
+            <div class="number" id="talkingTerms"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Time since we've been actually talking again</div>
+            <div class="number" id="talkingAgain"></div>
+        </div>
+
+        <div class="date-card">
+            <div class="label">Time since we've begun dating again</div>
             <div class="number" id="dating2"></div>
         </div>
 
-        <!-- % CARD -->
         <div class="date-card">
             <div class="label">% of life with him</div>
             <div class="number" id="percent"></div>
@@ -193,33 +198,52 @@ button:hover{
 const PASSWORD = "SFEY5126";
 
 const birthday = new Date("2007-04-05");
-const realization = new Date("2022-8-23");
+const realization = new Date("2022-08-23");
 const dating1 = new Date("2023-01-24");
+const talkingTerms = new Date("2025-04-24");
+const talkingAgain = new Date("2025-12-23");
 const dating2 = new Date("2026-05-01");
 
 function checkPassword(){
+
     const entered = document.getElementById("password").value;
 
     if(entered === PASSWORD){
+
         document.getElementById("login").classList.add("hidden");
         document.getElementById("app").classList.remove("hidden");
+
         startLiveUpdates();
-    } else {
+
+    }else{
+
         alert("Incorrect password");
+
     }
 }
 
 function diffDays(start){
+
     const now = new Date();
+
     return (now - start) / (1000 * 60 * 60 * 24);
+
 }
 
-// TOTAL MODE BREAKDOWN (separate system)
 function breakdown(days){
+
     const years = Math.floor(days / 365.25);
-    const months = Math.floor((days % 365.25) / 30.436875);
-    const remDays = Math.floor(days % 30.436875);
+
+    const months = Math.floor(
+        (days % 365.25) / 30.436875
+    );
+
+    const remDays = Math.floor(
+        days % 30.436875
+    );
+
     return `${years}y ${months}m ${remDays}d`;
+
 }
 
 function format(value, unit){
@@ -243,32 +267,50 @@ function format(value, unit){
 
 function updateUI(){
 
-    const mode = document.getElementById("unitSelect").value;
+    const mode =
+        document.getElementById("unitSelect").value;
 
     document.getElementById("todayDate")
-        .textContent = new Date().toLocaleDateString();
+        .textContent =
+        new Date().toLocaleDateString();
 
     const r = diffDays(realization);
     const d1 = diffDays(dating1);
+    const tt = diffDays(talkingTerms);
+    const ta = diffDays(talkingAgain);
     const d2 = diffDays(dating2);
 
-    document.getElementById("realization").textContent = format(r, mode);
-    document.getElementById("dating1").textContent = format(d1, mode);
-    document.getElementById("dating2").textContent = format(d2, mode);
+    document.getElementById("realization")
+        .textContent = format(r, mode);
 
-    // % of life (floor only, no rounding up)
+    document.getElementById("dating1")
+        .textContent = format(d1, mode);
+
+    document.getElementById("talkingTerms")
+        .textContent = format(tt, mode);
+
+    document.getElementById("talkingAgain")
+        .textContent = format(ta, mode);
+
+    document.getElementById("dating2")
+        .textContent = format(d2, mode);
+
     const life = diffDays(birthday);
     const real = diffDays(realization);
 
-    const percent = Math.floor((real / life) * 10000) / 100;
+    const percent =
+        Math.floor((real / life) * 10000) / 100;
 
     document.getElementById("percent")
         .textContent = percent + "%";
 }
 
 function startLiveUpdates(){
+
     updateUI();
+
     setInterval(updateUI, 1000);
+
 }
 
 </script>
