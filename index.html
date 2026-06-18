@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -60,10 +61,8 @@ input, select{
     border:none;
     border-radius:10px;
     margin-bottom:10px;
-
     background:#1c1410;
     color:white;
-
     border:1px solid rgba(70,160,255,0.25);
 }
 
@@ -77,10 +76,8 @@ button{
     padding:12px;
     border:none;
     border-radius:10px;
-
     background:#4da3ff;
     color:white;
-
     cursor:pointer;
     font-size:16px;
     transition:0.2s;
@@ -100,7 +97,6 @@ button:hover{
     border-radius:15px;
     padding:15px;
     margin-bottom:12px;
-
     border-left:3px solid #ff8a1f;
     box-shadow:inset 0 0 10px rgba(255,140,0,0.05);
 }
@@ -131,65 +127,73 @@ button:hover{
     font-size:30px;
 }
 </style>
+
 </head>
 
 <body>
 
 <div class="phone">
 
-    <div id="login" class="card">
+```
+<div id="login" class="card">
+    <h1>Timeline</h1>
+
+    <input type="password" id="password" placeholder="Enter Password">
+
+    <button onclick="checkPassword()">Unlock</button>
+</div>
+
+<div id="app" class="hidden card">
+
+    <div class="today">
         <h1>Timeline</h1>
-
-        <input type="password" id="password" placeholder="Enter Password">
-
-        <button onclick="checkPassword()">Unlock</button>
+        <div id="todayDate" class="subtitle"></div>
     </div>
 
-    <div id="app" class="hidden card">
+    <select id="unitSelect" onchange="updateUI()">
+        <option value="days">Days</option>
+        <option value="months">Months</option>
+        <option value="years">Years</option>
+        <option value="total">Total</option>
+    </select>
 
-        <div class="today">
-            <h1>Timeline</h1>
-            <div id="todayDate" class="subtitle"></div>
-        </div>
-
-        <select id="unitSelect" onchange="updateUI()">
-            <option value="days">Days</option>
-            <option value="months">Months</option>
-            <option value="years">Years</option>
-            <option value="total">Total</option>
-        </select>
-
-        <div class="date-card">
-            <div class="label">Time since we met</div>
-            <div class="number" id="realization"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">Time since we first got together</div>
-            <div class="number" id="dating1"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">Time since we've been on talking terms</div>
-            <div class="number" id="talkingTerms"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">Time since we've been actually talking again</div>
-            <div class="number" id="talkingAgain"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">Time since we've begun dating again</div>
-            <div class="number" id="dating2"></div>
-        </div>
-
-        <div class="date-card">
-            <div class="label">% of life with him</div>
-            <div class="number" id="percent"></div>
-        </div>
-
+    <div class="date-card">
+        <div class="label">Time since we met</div>
+        <div class="number" id="realization"></div>
     </div>
+
+    <div class="date-card">
+        <div class="label">Time since we first got together</div>
+        <div class="number" id="dating1"></div>
+    </div>
+
+    <div class="date-card">
+        <div class="label">Time since we've been on talking terms</div>
+        <div class="number" id="talkingTerms"></div>
+    </div>
+
+    <div class="date-card">
+        <div class="label">Time since we've been actually talking again</div>
+        <div class="number" id="talkingAgain"></div>
+    </div>
+
+    <div class="date-card">
+        <div class="label">Time since we first hung out again</div>
+        <div class="number" id="firstHangoutAgain"></div>
+    </div>
+
+    <div class="date-card">
+        <div class="label">Time since we've begun dating again</div>
+        <div class="number" id="dating2"></div>
+    </div>
+
+    <div class="date-card">
+        <div class="label">% of life with him</div>
+        <div class="number" id="percent"></div>
+    </div>
+
+</div>
+```
 
 </div>
 
@@ -202,6 +206,7 @@ const realization = new Date("2022-08-23");
 const dating1 = new Date("2023-01-24");
 const talkingTerms = new Date("2025-04-24");
 const talkingAgain = new Date("2025-12-23");
+const firstHangoutAgain = new Date("2026-04-25");
 const dating2 = new Date("2026-05-01");
 
 function checkPassword(){
@@ -278,6 +283,7 @@ function updateUI(){
     const d1 = diffDays(dating1);
     const tt = diffDays(talkingTerms);
     const ta = diffDays(talkingAgain);
+    const fha = diffDays(firstHangoutAgain);
     const d2 = diffDays(dating2);
 
     document.getElementById("realization")
@@ -291,6 +297,9 @@ function updateUI(){
 
     document.getElementById("talkingAgain")
         .textContent = format(ta, mode);
+
+    document.getElementById("firstHangoutAgain")
+        .textContent = format(fha, mode);
 
     document.getElementById("dating2")
         .textContent = format(d2, mode);
